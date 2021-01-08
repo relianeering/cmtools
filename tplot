@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+
+# ./tplot filename rpm scale offset
+# 
+# ReSES.net tplot
+# Input parameters:
+# -r <number> shaft rpm, defines one turn. Must be above 0. By deafult is 60 rpm.
+# -s <number> scale of the signal. Must be above 0. By deafult is 1.
+# -o <number> turns visualizing offset. Must be above 0. By deafult is 5.
+# filename <filename> file should be exported as twf from ReSES.net. *.twf will open all files.
+# Output:
+# plot_<filename>.pdf
+# NOTE: All files should be in the same directory: *.twf, pplotS.p, tplot
+# 
+plot() {
+	filename="$@"
+	out="tPlot_$filename.pdf"
+	echo "saving to $out"
+gnuplot << EOF
+set term pdfcairo size 7in,7in
+set margins 6,6,6,6
+set size square
+set key outside
+set output "$out"
+set title "ReSES.net tPlot | rpm: $rpm | $filename"
+datafile="$filename"
+rpm=$rpm
+toffset=$offset
+multiplier=$scale
+load "pplotS.p"
+EOF
+}
+
+if ! command -v gnuplot &> /dev/null
+then
+    echo "gnuplot not installed"
+    exit
+fi
+
+usage() { echo "Usage: $0 [-r <rpm>] [-o <offset>] [-s <scale>] filename" 1>&2; exit 1; }
+# regex for matching floating point numbers
+floating_point_re='^[0-9]+([.][0-9]+)?$'
+
+
+while getopts "r:o:s:" o; do
+    case "${o}" in
+        r)
+            rpm=${OPTARG};
+            if ! [[ $rpm =~ $floating_point_re ]] ; then
+  				echo "Error: rpm (-r) is not a number" >&2;
+  				usage;
+			fi
+			;;
+        o)
+            offset=${OPTARG};
+            if ! [[ $offset =~ $floating_point_re ]] ; then
+  				echo "offset: scale (-s) is not a number" >&2;
+  				usage;
+			fi
+			;;
+        s)
+            scale=${OPTARG};
+            if ! [[ $scale =~ $floating_point_re ]] ; then
+  				echo "Error: scale (-s) is not a number" >&2;
+  				usage;
+			fi
+			;;
+        *)
+            usage
+            ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+scale=${scale:-1}
+rpm=${rpm:-60}
+offset=${offset:-5}
+
+echo "rpm    = ${rpm}"
+echo "offset = ${offset}"
+echo "scale  = ${scale}"
+
+for filename in "$@"
+do
+	plot $filename
+done
+
+
