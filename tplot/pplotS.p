@@ -15,7 +15,7 @@ set style line 5 lt 1 lc rgb "orange" pt 1
 #
 timeLS = 3
 # multiplier = 1
-# toffset = 75
+# toffset = 5
 # rpm = 1500.0
 # datafile = "data.twf"
 sampleN = 44100
@@ -24,6 +24,8 @@ numberT = timeLS / turnTS
 numberRad = numberT * 2 * pi
 turnS = int(sampleN * turnTS)
 pangle = 2 * pi / turnS
+
+
 sturn1 = 1
 sturn2 = sturn1 + turnS
 sturn3 = sturn2 + turnS
@@ -35,6 +37,18 @@ toff2 = 2 * toffset
 toff3 = 3 * toffset
 toff4 = 4 * toffset
 toff5 = 5 * toffset
+
+#
+# Get statistical data from the time signal
+#
+stats datafile every ::1 using 1 name "A" nooutput
+#
+# set labels on the bottom of the graph
+set label 1 sprintf("Scale: 1g is %d graph unit(s)", multiplier) at graph -0.07, graph 0.03
+set label 2 sprintf("Turns offset: %d", toffset) at graph -0.07, graph 0
+set label 3 sprintf("Max: %2.3f g | Min: %2.3f g | Standard DEV: %2.4f g",A_max, A_min, A_stddev) at graph -0.07, graph -0.07
+set label 4 sprintf("RPM: %d | Turns: %3.0f | Turn time: %1.5f s | Samples in a turn: %d", rpm, numberT, turnTS, turnS) at graph -0.07, graph -0.1
+
 #
 # Plot and grid setup
 #

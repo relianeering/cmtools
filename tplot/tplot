@@ -22,7 +22,7 @@ set margins 6,6,6,6
 set size square
 set key outside
 set output "$out"
-set title "ReSES.net tPlot | rpm: $rpm | $filename"
+set title "ReSES.net tPlot | $filename"
 datafile="$filename"
 rpm=$rpm
 toffset=$offset
@@ -54,7 +54,7 @@ while getopts "r:o:s:" o; do
         o)
             offset=${OPTARG};
             if ! [[ $offset =~ $floating_point_re ]] ; then
-  				echo "offset: scale (-s) is not a number" >&2;
+  				echo "Error: offset (-o) is not a number" >&2;
   				usage;
 			fi
 			;;

@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+
+# ./esplot filename rpm s e
+# 
+# ReSES.net vSplot
+# Input parameters:
+# -r <number> shaft rpm, defines one turn. Must be above 0. By deafult is 60 rpm.
+# -s <number> start frequency. Must be above 0. By deafult is 0.
+# -e <number> end frequency. Must be above sf. By deafult is 500.
+# filename <filename> file should be exported as env from ReSES.net. *.env will open all files.
+# Output:
+# vSplot_<filename>.pdf
+# NOTE: All files should be in the same directory: *.vel, vsplot.p, vsplot
+# 
+plot() {
+	filename="$@"
+	out="eSplot_$filename.pdf"
+	echo "saving to $out"
+gnuplot << EOF
+set term pdfcairo size 9in,6in
+# set margins 10,5,10,5
+set margins 10,5,10,5
+set key outside
+set output "$out"
+set title "ReSES.net sE Spectrum | $filename"
+datafile="$filename"
+rpm=$rpm
+startF=$startF
+endF=$endF
+load "esplot.p"
+EOF
+}
+
+if ! command -v gnuplot &> /dev/null
+then
+    echo "gnuplot not installed"
+    exit
+fi
+
+usage() { echo "Usage: $0 [-r <rpm>] [-s <startF>] [-e <endF>] filename" 1>&2; exit 1; }
+# regex for matching floating point numbers
+floating_point_re='^[0-9]+([.][0-9]+)?$'
+
+
+while getopts "r:s:e:" o; do
+    case "${o}" in
+        r)
+            rpm=${OPTARG};
+            if ! [[ $rpm =~ $floating_point_re ]] ; then
+  				echo "Error: rpm (-r) is not a number" >&2;
+  				usage;
+			fi
+			;;
+        s)
+            startF=${OPTARG};
+            if ! [[ $startF =~ $floating_point_re ]] ; then
+  				echo "Error: Start frequency (-s) is not a number" >&2;
+  				usage;
+			fi
+			;;
+        e)
+            endF=${OPTARG};
+            if ! [[ $endF =~ $floating_point_re ]] ; then
+  				echo "Error: End frequency (-e) is not a number" >&2;
+  				usage;
+			fi
+			;;
+        *)
+            usage
+            ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+startF=${startF:-0}
+rpm=${rpm:-60}
+endF=${endF:-500}
+
+echo "rpm    = ${rpm}"
+echo "start freq = ${startF}"
+echo "end freq  = ${endF}"
+
+for filename in "$@"
+do
+	plot $filename
+done
+
+
