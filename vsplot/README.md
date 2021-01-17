@@ -21,7 +21,7 @@ For example:
 ```
 Reads all `.vel` files in the directory and generates polar plots in PDF format using the parameters.
 
-Use the file data333.twf to test the tool.
+Use the file data333.vel to test the tool.
 ```sh
 ./vsplot -r 333.0 -s 50 -e 250 data333.vel
 ```
